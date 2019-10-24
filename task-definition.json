@@ -1,0 +1,37 @@
+{
+  "containerDefinitions": [
+    {
+      "essential": true,
+      "image": "%AWS_ECR_ACCOUNT_URL%/%PROJECT_NAME_LOWERCASE%:%BRANCH%-latest",
+      "memoryReservation": 50,
+      "name": "laravel"
+    },
+    {
+      "command": [
+        "php",
+        "artisan",
+        "schedule:run"
+      ],
+      "environment": [
+        { "name": "APP_ENV", "value": "%BRANCH%" }
+      ],
+      "essential": true,
+      "image": "%AWS_ECR_ACCOUNT_URL%/%PROJECT_NAME_LOWERCASE%-php-fpm:latest",
+      "memoryReservation": 50,
+      "name": "php-fpm",
+      "secrets": [
+        {
+          "name": "SECRETS",
+          "valueFrom": "arn:aws:secretsmanager:%AWS_DEFAULT_REGION%:%AWS_ACCOUNT_ID%:secret:%PROJECT_NAME%-env-vars-%BRANCH%"
+        }
+      ],
+      "volumesFrom": [
+        {
+          "sourceContainer": "laravel"
+        }
+      ]
+    }
+  ],
+  "executionRoleArn": "arn:aws:iam::%AWS_ACCOUNT_ID%:role/ecsTaskExecutionRole",
+  "family": "%REPONAME%-%BRANCH%-task-definition"
+}
